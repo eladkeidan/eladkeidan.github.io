@@ -14,4 +14,4 @@ Cannes-winning / Oscar-shortlisted filmmaker, screenwriter, and applied AI & ML 
 
 ### Contact
 - **LinkedIn:** [linkedin.com/in/eladkeidan](https://www.linkedin.com/in/eladkeidan/)
-- **Email (Mozmail Alias):** zrl6jhz6l@mozmail.com
+- **Email:** Reveal via verification challenge at [eladkeidan.github.io#contact](https://eladkeidan.github.io#contact)
