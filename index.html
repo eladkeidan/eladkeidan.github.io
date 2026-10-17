@@ -368,17 +368,16 @@
             </div>
             <h4 class="captcha-heading">Spot the Odd Bee Out</h4>
             <p class="captcha-subtext">
-              15 bees have <strong>3 belly stripes</strong>, but one has <strong>only 2</strong>.<br>
-              Find and click the odd bee to reveal email:
+              Spot and click the odd bee out to reveal email:
             </p>
 
             <!-- 4x4 Grid of 16 Bees -->
             <div class="bees-grid" id="bees-grid">
-              <!-- Dynamically populated by JS with 16 bees (15 with 3 stripes, 1 with 2 stripes) -->
+              <!-- Dynamically populated by JS with 16 bees (15 identical, 1 odd) -->
             </div>
 
             <div class="captcha-status-row">
-              <span id="captcha-feedback" class="captcha-feedback">Look closely at the belly stripes</span>
+              <span id="captcha-feedback" class="captcha-feedback">Find the unique bee</span>
               <button id="reset-captcha-btn" class="btn-reset" type="button">Shuffle</button>
             </div>
 
@@ -469,7 +468,7 @@
         solved = false;
         if (revealedBox) revealedBox.style.display = 'none';
         if (feedback) {
-          feedback.textContent = 'Look closely at the belly stripes';
+          feedback.textContent = 'Find the unique bee';
           feedback.style.color = 'var(--text-dim)';
         }
 
@@ -492,7 +491,7 @@
             if (isOdd) {
               solved = true;
               btn.classList.add('bee-winner');
-              feedback.textContent = 'Buzz! You found the 2-striped bee! 🐝';
+              feedback.textContent = 'You found the odd bee! 🐝';
               feedback.style.color = '#34d399';
 
               // Decode email client-side from char codes
@@ -506,7 +505,7 @@
               btn.classList.remove('shake');
               void btn.offsetWidth; // retrigger animation
               btn.classList.add('shake');
-              feedback.textContent = 'That one has 3 stripes — look for 2!';
+              feedback.textContent = 'Not that one — look closely!';
               feedback.style.color = 'var(--accent-amber)';
             }
           });
