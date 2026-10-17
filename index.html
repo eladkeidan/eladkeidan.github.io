@@ -360,69 +360,31 @@
             </a>
           </div>
 
-          <!-- Interactive Client-Side Anti-Bot Challenge -->
+          <!-- Interactive Client-Side Anti-Bot Challenge: 16 Bees Grid -->
           <div class="captcha-card" id="captcha-card">
             <div class="captcha-badge">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              Anti-Bot Challenge
+              Anti-Bot Verification
             </div>
-            <h4 class="captcha-heading">Connect the dots to draw a house to reveal email</h4>
-            <p class="captcha-subtext">Click the dots in order: <strong>1 &rarr; 2 &rarr; 3 &rarr; 4 &rarr; 5 &rarr; 1</strong></p>
+            <h4 class="captcha-heading">Spot the Odd Bee Out</h4>
+            <p class="captcha-subtext">
+              15 bees have <strong>3 belly stripes</strong>, but one has <strong>only 2</strong>.<br>
+              Find and click the odd bee to reveal email:
+            </p>
 
-            <div class="house-svg-container">
-              <svg id="house-svg" viewBox="0 0 260 205" width="260" height="205">
-                <!-- Guide dashed outline -->
-                <polygon points="50,175 210,175 210,95 130,25 50,95" class="guide-house" />
-                
-                <!-- Dynamic drawing path -->
-                <path id="house-path" d="" class="drawn-house" />
-
-                <!-- 5 Numbered Dot Nodes -->
-                <!-- Dot 1: Bottom-Left (50, 175) -->
-                <g class="dot-node" data-id="1" transform="translate(50, 175)">
-                  <circle r="18" class="dot-hitbox" />
-                  <circle r="10" class="dot-circle" />
-                  <text dy="4" class="dot-num">1</text>
-                </g>
-
-                <!-- Dot 2: Bottom-Right (210, 175) -->
-                <g class="dot-node" data-id="2" transform="translate(210, 175)">
-                  <circle r="18" class="dot-hitbox" />
-                  <circle r="10" class="dot-circle" />
-                  <text dy="4" class="dot-num">2</text>
-                </g>
-
-                <!-- Dot 3: Wall Top-Right (210, 95) -->
-                <g class="dot-node" data-id="3" transform="translate(210, 95)">
-                  <circle r="18" class="dot-hitbox" />
-                  <circle r="10" class="dot-circle" />
-                  <text dy="4" class="dot-num">3</text>
-                </g>
-
-                <!-- Dot 4: Roof Apex (130, 25) -->
-                <g class="dot-node" data-id="4" transform="translate(130, 25)">
-                  <circle r="18" class="dot-hitbox" />
-                  <circle r="10" class="dot-circle" />
-                  <text dy="4" class="dot-num">4</text>
-                </g>
-
-                <!-- Dot 5: Wall Top-Left (50, 95) -->
-                <g class="dot-node" data-id="5" transform="translate(50, 95)">
-                  <circle r="18" class="dot-hitbox" />
-                  <circle r="10" class="dot-circle" />
-                  <text dy="4" class="dot-num">5</text>
-                </g>
-              </svg>
+            <!-- 4x4 Grid of 16 Bees -->
+            <div class="bees-grid" id="bees-grid">
+              <!-- Dynamically populated by JS with 16 bees (15 with 3 stripes, 1 with 2 stripes) -->
             </div>
 
             <div class="captcha-status-row">
-              <span id="captcha-feedback" class="captcha-feedback">Click dot 1 to begin</span>
-              <button id="reset-captcha-btn" class="btn-reset" type="button">Reset</button>
+              <span id="captcha-feedback" class="captcha-feedback">Look closely at the belly stripes</span>
+              <button id="reset-captcha-btn" class="btn-reset" type="button">Shuffle</button>
             </div>
 
-            <!-- Dynamically Revealed Box (Hidden until solved) -->
+            <!-- Dynamically Revealed Box (Hidden until odd bee is found) -->
             <div id="revealed-box" class="revealed-box" style="display: none;">
-              <div class="revealed-tag">&#10003; Verification Passed!</div>
+              <div class="revealed-tag">&#10003; Bee Spotted! Verification Passed</div>
               <div class="revealed-row">
                 <a id="revealed-email-link" href="#" class="revealed-link"></a>
                 <button id="copy-email-btn" class="btn btn-sm btn-outline" type="button">
@@ -446,89 +408,94 @@
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Client-side Naive House Captcha (connect 1 -> 2 -> 3 -> 4 -> 5 -> 1)
+    // Client-side 16-Bee Spot-the-Difference Challenge
     (function() {
-      const coords = {
-        1: { x: 50, y: 175 },
-        2: { x: 210, y: 175 },
-        3: { x: 210, y: 95 },
-        4: { x: 130, y: 25 },
-        5: { x: 50, y: 95 }
-      };
-
-      const sequence = [1, 2, 3, 4, 5, 1];
-      let step = 0;
-      let pathSegments = [];
-
-      const housePath = document.getElementById('house-path');
-      const houseSvg = document.getElementById('house-svg');
+      const grid = document.getElementById('bees-grid');
       const feedback = document.getElementById('captcha-feedback');
       const resetBtn = document.getElementById('reset-captcha-btn');
       const revealedBox = document.getElementById('revealed-box');
       const emailLink = document.getElementById('revealed-email-link');
       const copyBtn = document.getElementById('copy-email-btn');
       const copyText = document.getElementById('copy-text');
-      const dotNodes = document.querySelectorAll('.dot-node');
 
+      let oddIndex = -1;
+      let solved = false;
       let decodedEmail = '';
 
-      function resetCaptcha() {
-        step = 0;
-        pathSegments = [];
-        if (housePath) housePath.setAttribute('d', '');
-        if (houseSvg) houseSvg.classList.remove('solved');
-        dotNodes.forEach(node => {
-          node.classList.remove('active', 'completed');
-        });
-        if (feedback) {
-          feedback.textContent = 'Click dot 1 to begin';
-          feedback.style.color = 'var(--text-dim)';
+      function getBeeSvg(stripesCount) {
+        let stripes = '';
+        if (stripesCount === 3) {
+          stripes = `
+            <rect x="23" y="14" width="3.5" height="18" rx="1.5" fill="#0f172a" />
+            <rect x="30" y="13" width="3.5" height="20" rx="1.5" fill="#0f172a" />
+            <rect x="37" y="15" width="3.5" height="16" rx="1.5" fill="#0f172a" />
+          `;
+        } else {
+          // 2 stripes for the odd bee
+          stripes = `
+            <rect x="25" y="13.5" width="3.5" height="19" rx="1.5" fill="#0f172a" />
+            <rect x="34" y="14" width="3.5" height="18" rx="1.5" fill="#0f172a" />
+          `;
         }
-        if (revealedBox) revealedBox.style.display = 'none';
+
+        return `
+          <svg viewBox="0 0 54 42" width="46" height="36" class="bee-svg">
+            <!-- Wings -->
+            <g class="bee-wings">
+              <ellipse cx="24" cy="11" rx="6" ry="10" transform="rotate(-22 24 11)" fill="rgba(224, 242, 254, 0.85)" stroke="#38bdf8" stroke-width="1.2" />
+              <ellipse cx="32" cy="10" rx="6" ry="10" transform="rotate(18 32 10)" fill="rgba(224, 242, 254, 0.85)" stroke="#38bdf8" stroke-width="1.2" />
+            </g>
+            <!-- Stinger -->
+            <polygon points="46,23 42,20 42,26" fill="#0f172a" />
+            <!-- Honey Body -->
+            <ellipse cx="30" cy="23" rx="15" ry="10.5" fill="#f59e0b" stroke="#d97706" stroke-width="1" />
+            <!-- Stripes -->
+            ${stripes}
+            <!-- Head -->
+            <circle cx="16" cy="23" r="7.5" fill="#1e293b" />
+            <!-- Eye -->
+            <circle cx="14" cy="21.5" r="1.8" fill="#ffffff" />
+            <circle cx="13.5" cy="21.5" r="0.9" fill="#0f172a" />
+            <!-- Antennae -->
+            <path d="M14 17 Q11 12 8 13" fill="none" stroke="#1e293b" stroke-width="1.3" stroke-linecap="round" />
+            <path d="M16 16 Q15 11 13 10" fill="none" stroke="#1e293b" stroke-width="1.3" stroke-linecap="round" />
+          </svg>
+        `;
       }
 
-      function onDotClick(clickedId) {
-        if (step >= sequence.length) return; // already solved
+      function initGrid() {
+        if (!grid) return;
+        grid.innerHTML = '';
+        solved = false;
+        if (revealedBox) revealedBox.style.display = 'none';
+        if (feedback) {
+          feedback.textContent = 'Look closely at the belly stripes';
+          feedback.style.color = 'var(--text-dim)';
+        }
 
-        const expectedId = sequence[step];
+        // Random slot 0..15 for the odd bee
+        oddIndex = Math.floor(Math.random() * 16);
 
-        if (clickedId === expectedId) {
-          const pt = coords[clickedId];
+        for (let i = 0; i < 16; i++) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'bee-card';
+          btn.setAttribute('aria-label', `Bee ${i + 1}`);
 
-          if (step === 0) {
-            pathSegments.push(`M ${pt.x} ${pt.y}`);
-            const node = document.querySelector(`.dot-node[data-id="${clickedId}"]`);
-            if (node) node.classList.add('active');
-            feedback.textContent = 'Good! Now connect to dot 2';
-            feedback.style.color = 'var(--accent-cyan)';
-            step++;
-          } else {
-            pathSegments.push(`L ${pt.x} ${pt.y}`);
-            const prevId = sequence[step - 1];
-            const prevNode = document.querySelector(`.dot-node[data-id="${prevId}"]`);
-            if (prevNode) {
-              prevNode.classList.remove('active');
-              prevNode.classList.add('completed');
-            }
+          const isOdd = (i === oddIndex);
+          const stripesCount = isOdd ? 2 : 3;
+          btn.innerHTML = getBeeSvg(stripesCount);
 
-            const currNode = document.querySelector(`.dot-node[data-id="${clickedId}"]`);
-            if (currNode) currNode.classList.add('active');
+          btn.addEventListener('click', () => {
+            if (solved) return;
 
-            step++;
-
-            if (step === sequence.length) {
-              // Completed house!
-              housePath.setAttribute('d', pathSegments.join(' ') + ' Z');
-              houseSvg.classList.add('solved');
-              dotNodes.forEach(n => {
-                n.classList.remove('active');
-                n.classList.add('completed');
-              });
-
-              feedback.textContent = 'House completed! Email revealed below:';
+            if (isOdd) {
+              solved = true;
+              btn.classList.add('bee-winner');
+              feedback.textContent = 'Buzz! You found the 2-striped bee! 🐝';
               feedback.style.color = '#34d399';
 
-              // Decode email from character codes (zero plain email in source)
+              // Decode email client-side from char codes
               const encoded = [122, 114, 108, 54, 106, 104, 122, 54, 108, 64, 109, 111, 122, 109, 97, 105, 108, 46, 99, 111, 109];
               decodedEmail = encoded.map(c => String.fromCharCode(c)).join('');
 
@@ -536,29 +503,20 @@
               emailLink.textContent = decodedEmail;
               revealedBox.style.display = 'flex';
             } else {
-              housePath.setAttribute('d', pathSegments.join(' '));
-              const nextId = sequence[step];
-              if (nextId === 1) {
-                feedback.textContent = 'Almost done! Click dot 1 to close the roof';
-              } else {
-                feedback.textContent = `Great! Connect to dot ${nextId}`;
-              }
-              feedback.style.color = 'var(--accent-cyan)';
+              btn.classList.remove('shake');
+              void btn.offsetWidth; // retrigger animation
+              btn.classList.add('shake');
+              feedback.textContent = 'That one has 3 stripes — look for 2!';
+              feedback.style.color = 'var(--accent-amber)';
             }
-          }
-        } else {
-          feedback.textContent = `Please click dot ${expectedId} next`;
-          feedback.style.color = 'var(--accent-amber)';
+          });
+
+          grid.appendChild(btn);
         }
       }
 
-      dotNodes.forEach(node => {
-        const id = parseInt(node.getAttribute('data-id'), 10);
-        node.addEventListener('click', () => onDotClick(id));
-      });
-
       if (resetBtn) {
-        resetBtn.addEventListener('click', resetCaptcha);
+        resetBtn.addEventListener('click', initGrid);
       }
 
       if (copyBtn) {
@@ -571,6 +529,8 @@
           }
         });
       }
+
+      initGrid();
     })();
   </script>
 </body>

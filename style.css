@@ -693,91 +693,72 @@ body {
   margin-bottom: 18px;
 }
 
-.house-svg-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 8px 0 16px;
+/* 16 Bees Grid Challenge */
+.bees-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  max-width: 340px;
+  margin: 12px auto 18px;
 }
 
-.house-svg-container svg {
-  touch-action: manipulation;
-  overflow: visible;
-}
-
-.guide-house {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.12);
-  stroke-width: 1.5;
-  stroke-dasharray: 4 4;
-}
-
-.drawn-house {
-  fill: none;
-  stroke: var(--accent-cyan);
-  stroke-width: 3.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: stroke 0.3s ease, fill 0.4s ease;
-  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
-}
-
-#house-svg.solved .drawn-house {
-  stroke: #34d399;
-  fill: rgba(52, 211, 153, 0.12);
-  filter: drop-shadow(0 0 12px rgba(52, 211, 153, 0.7));
-}
-
-.dot-node {
+.bee-card {
+  background-color: rgba(19, 27, 46, 0.8);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 4px;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
 }
 
-.dot-node:hover {
-  transform: scale(1.15);
+.bee-card:hover {
+  background-color: rgba(30, 41, 69, 0.95);
+  border-color: rgba(56, 189, 248, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
-.dot-hitbox {
-  fill: transparent;
+.bee-card:hover .bee-wings {
+  animation: flutter 0.25s infinite alternate ease-in-out;
 }
 
-.dot-circle {
-  fill: #131b2e;
-  stroke: #64748b;
-  stroke-width: 2;
-  transition: all 0.2s ease;
+@keyframes flutter {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-1.5px) scaleY(1.08); }
 }
 
-.dot-node:hover .dot-circle {
-  stroke: var(--accent-cyan);
-  fill: #1e293b;
-}
-
-.dot-node.active .dot-circle {
-  fill: var(--accent-cyan);
-  stroke: var(--accent-cyan);
-  filter: drop-shadow(0 0 8px var(--accent-cyan));
-}
-
-.dot-node.completed .dot-circle {
-  fill: #34d399;
-  stroke: #34d399;
-  filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.5));
-}
-
-.dot-num {
-  font-size: 11px;
-  font-weight: 700;
-  fill: #94a3b8;
-  text-anchor: middle;
+.bee-svg {
+  display: block;
   pointer-events: none;
-  user-select: none;
-  font-family: var(--font-display);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
 }
 
-.dot-node.active .dot-num,
-.dot-node.completed .dot-num {
-  fill: #0a0d14;
+.bee-card.bee-winner {
+  background-color: rgba(6, 78, 59, 0.45);
+  border-color: #34d399;
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.55);
+  animation: winnerPulse 0.5s ease-out;
+}
+
+@keyframes winnerPulse {
+  0% { transform: scale(0.92); }
+  50% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+.bee-card.shake {
+  animation: shakeCard 0.4s ease;
+  border-color: rgba(245, 158, 11, 0.55);
+}
+
+@keyframes shakeCard {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
 }
 
 .captcha-status-row {
